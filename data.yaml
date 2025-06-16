@@ -1,5 +1,6 @@
 train: ../datasets/animals/yolo_format/images
 val: ../datasets/animals/yolo_format/images
 
+
 nc: 6
 names: ['cat', 'dog','cow','goat','hen','rabbit']

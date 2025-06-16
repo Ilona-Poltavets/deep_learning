@@ -1,51 +1,64 @@
+import logging
+import multiprocessing
 from ultralytics import YOLO
-import torch
-import os
-import yaml
-
-# print(torch.cuda.get_device_name(0))
-# print(torch.cuda.device_count())
-# print(torch.cuda.is_available())
-# print(torch.version.cuda)
-
-def check_dataset(data_path):
-    with open(data_path, 'r') as f:
-        data_config = yaml.safe_load(f)
-
-    train_path = data_config.get('train')
-    val_path = data_config.get('val')
-
-    if not (os.path.exists(train_path) and os.path.exists(val_path)):
-        raise FileNotFoundError(f"Train or validation path does not exist in {data_path}")
-
-    def count_images(path):
-        return sum(1 for file in os.listdir(path) if file.endswith(('.jpg', '.jpeg', '.png')))
-
-    if count_images(train_path) == 0 or count_images(val_path) == 0:
-        raise ValueError("No images found in train or val dataset directories.")
+import cv2
 
 
-if __name__ == '__main__':
-    model = YOLO('yolov8n.pt')
-    data_path = './data.yaml'
+def get_frame():
+    cap = cv2.VideoCapture(701)
 
-    try:
-        check_dataset(data_path)
-        print("Dataset validation passed.")
-    except (FileNotFoundError, ValueError) as e:
-        print(f"Dataset check failed: {e}")
-        exit(1)
+    if not cap.isOpened():
+        logging.info("Error: Could not open OBS Virtual Camera")
+        exit()
 
-    model.train(
-        data=data_path,
-        epochs=50,
-        imgsz=640,
-        batch=16,
-        name='animal_classification',
-        workers=4,
-        device=0
-    )
+    while (True):
+        ret, frame = cap.read()
+        if not ret:
+            logging.info("Error: Could not read frame")
+            break
 
-    test_image = '../datasets/test_image.jpg'
-    results = model.predict(source=test_image, show=True)
+        cv2.imshow('OBS Virtual Camera', frame)
 
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+def run_detection():
+    model = YOLO('./runs/detect/animal_classification16/weights/best.pt')
+
+    cap = cv2.VideoCapture(701)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+
+    if not cap.isOpened():
+        logging.info("Error: Could not open OBS Virtual Camera")
+        return
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            logging.info("Error: Could not read frame")
+            break
+
+        results = model(frame, stream=False)
+
+        annotated_frame = results[0].plot()
+
+        cv2.imshow('YOLOv8 Detection (OBS Virtual Camera)', annotated_frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    logging.info("Starting OBS Virtual Camera")
+    run_detection()
+    # q = multiprocessing.JoinableQueue()
+    # p1 = multiprocessing.Process(target=get_frame, args=(), daemon=True)  # Removed 'q' from args
+    # p1.start()
