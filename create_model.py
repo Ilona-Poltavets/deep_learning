@@ -39,12 +39,14 @@ if __name__ == '__main__':
     # to learn model
     model.train(
         data=data_path,
+        # epochs=150,
         epochs=50,
         imgsz=640,
         batch=16,
         name='animal_classification',
         workers=4,
-        device=0
+        device=0,
+        augment=True
     )
 
     test_image = '../datasets/test_image.jpg'

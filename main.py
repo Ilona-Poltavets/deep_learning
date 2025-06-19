@@ -26,7 +26,7 @@ def get_frame():
     cv2.destroyAllWindows()
 
 def run_detection():
-    model = YOLO('./runs/detect/animal_classification16/weights/best.pt')
+    model = YOLO('./runs/detect/animal_classification2/weights/best.pt')
 
     cap = cv2.VideoCapture(701)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
@@ -42,7 +42,7 @@ def run_detection():
             logging.info("Error: Could not read frame")
             break
 
-        results = model(frame, stream=False)
+        results = model(frame, stream=False,conf=0.5)
 
         annotated_frame = results[0].plot()
 

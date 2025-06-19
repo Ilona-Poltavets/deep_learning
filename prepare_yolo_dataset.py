@@ -1,7 +1,8 @@
 import os
 import shutil
 
-CLASS_NAMES = ['Cat', 'Dog', 'Cow', 'Goat', 'Hen', 'Rabbit']
+# CLASS_NAMES = ['Cat', 'Dog', 'Cow', 'Goat', 'Hen', 'Rabbit']
+CLASS_NAMES = ['Cat', 'Dog', 'Hen', 'Rabbit']
 CLASS_NAME_TO_ID = {name: i for i, name in enumerate(CLASS_NAMES)}
 
 def prepare_yolo_dataset(root_dir, output_dir):
