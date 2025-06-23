@@ -1,5 +1,5 @@
 train: ../datasets/animals/yolo_format/images
-val: ../datasets/animals/yolo_format/images
+val: ../datasets/animals/yolo_format_val/images
 
 
 #nc: 6
